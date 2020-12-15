@@ -161,6 +161,7 @@ internal class BridgeLowering(val context: JvmBackendContext) : FileLoweringPass
         val isFinal: Boolean = true,
         val isSynthetic: Boolean = false,
         val isOverriding: Boolean = true,
+        val needsAbstractTarget: Boolean = true
     )
 
     private val potentialBridgeTargets = mutableListOf<IrSimpleFunction>()
@@ -263,7 +264,8 @@ internal class BridgeLowering(val context: JvmBackendContext) : FileLoweringPass
 
             // We only generate a special bridge method if it does not clash with a final method in a superclass or the current method
             val specialBridgeTarget = if (
-                specialBridge.signature !in blacklist && (!irFunction.isFakeOverride || irFunction.jvmMethod != specialBridge.signature)
+                specialBridge.signature !in blacklist &&
+                (!irFunction.isFakeOverride || irFunction.jvmMethod != specialBridge.signature)
             ) {
                 // If irFunction is a fake override, we replace it with a stub and redirect all calls to irFunction with
                 // calls to the stub instead. Otherwise we'll end up calling the special method itself and get into an
@@ -279,8 +281,12 @@ internal class BridgeLowering(val context: JvmBackendContext) : FileLoweringPass
                 if (irFunction.isFakeOverride) {
                     bridgeTarget = when {
                         irFunction.isJvmAbstract(context.state.jvmDefaultMode) -> {
-                            irClass.declarations.remove(irFunction)
-                            irClass.addAbstractMethodStub(irFunction)
+                            if (specialBridge.needsAbstractTarget) {
+                                irClass.declarations.remove(irFunction)
+                                irClass.addAbstractMethodStub(irFunction)
+                            } else {
+                                irFunction
+                            }
                         }
                         irFunction.modality != Modality.FINAL -> {
                             val overriddenFromClass = irFunction.overriddenFromClass()!!
@@ -637,7 +643,8 @@ internal class BridgeLowering(val context: JvmBackendContext) : FileLoweringPass
             if (specialBuiltInInfo != null)
                 return SpecialBridge(
                     function, computeJvmMethod(function), specialBuiltInInfo.needsGenericSignature,
-                    isOverriding = specialBuiltInInfo.isOverriding
+                    isOverriding = specialBuiltInInfo.isOverriding,
+                    needsAbstractTarget = specialBuiltInInfo.needsAbstractTarget
                 )
 
             for (overridden in function.overriddenSymbols) {

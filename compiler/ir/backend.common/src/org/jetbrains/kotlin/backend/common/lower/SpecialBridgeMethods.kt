@@ -28,7 +28,8 @@ data class SpecialMethodWithDefaultInfo(
 
 class BuiltInWithDifferentJvmName(
     val needsGenericSignature: Boolean = false,
-    val isOverriding: Boolean = true
+    val isOverriding: Boolean = true,
+    val needsAbstractTarget: Boolean = true
 )
 
 class SpecialBridgeMethods(val context: CommonBackendContext) {
@@ -95,12 +96,12 @@ class SpecialBridgeMethods(val context: CommonBackendContext) {
     )
 
     private val specialMethods = mapOf(
-        makeDescription(StandardNames.FqNames.number.toSafe(), "toByte") to BuiltInWithDifferentJvmName(),
-        makeDescription(StandardNames.FqNames.number.toSafe(), "toShort") to BuiltInWithDifferentJvmName(),
-        makeDescription(StandardNames.FqNames.number.toSafe(), "toInt") to BuiltInWithDifferentJvmName(),
-        makeDescription(StandardNames.FqNames.number.toSafe(), "toLong") to BuiltInWithDifferentJvmName(),
-        makeDescription(StandardNames.FqNames.number.toSafe(), "toFloat") to BuiltInWithDifferentJvmName(),
-        makeDescription(StandardNames.FqNames.number.toSafe(), "toDouble") to BuiltInWithDifferentJvmName(),
+        makeDescription(StandardNames.FqNames.number.toSafe(), "toByte") to BuiltInWithDifferentJvmName(needsAbstractTarget = false),
+        makeDescription(StandardNames.FqNames.number.toSafe(), "toShort") to BuiltInWithDifferentJvmName(needsAbstractTarget = false),
+        makeDescription(StandardNames.FqNames.number.toSafe(), "toInt") to BuiltInWithDifferentJvmName(needsAbstractTarget = false),
+        makeDescription(StandardNames.FqNames.number.toSafe(), "toLong") to BuiltInWithDifferentJvmName(needsAbstractTarget = false),
+        makeDescription(StandardNames.FqNames.number.toSafe(), "toFloat") to BuiltInWithDifferentJvmName(needsAbstractTarget = false),
+        makeDescription(StandardNames.FqNames.number.toSafe(), "toDouble") to BuiltInWithDifferentJvmName(needsAbstractTarget = false),
         makeDescription(StandardNames.FqNames.charSequence.toSafe(), "get", 1) to BuiltInWithDifferentJvmName(),
         makeDescription(StandardNames.FqNames.mutableList, "removeAt", 1) to
                 BuiltInWithDifferentJvmName(needsGenericSignature = true, isOverriding = false)
